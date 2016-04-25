@@ -4,6 +4,7 @@
 function GameEngine(){
   this.entities=[];
   this.keyboard=null;
+  this.updateKeyboard=false;
   this.mouse=null;
   this.scale=1;
 }
@@ -17,30 +18,61 @@ GameEngine.prototype.init=function () {
 GameEngine.prototype.captureKeyboard=function (){
     var that = this;
     window.addEventListener("keydown", function(e) {
+
       var keyboardValue={left:37,right:39,down:40,up:38}
       switch(e.keyCode) {
         case keyboardValue.left:
-          this.keyboard='l';
+          that.keyboard='l';
           break;
         case keyboardValue.up:
-          this.keyboard='u';
+          that.keyboard='u';
           break;
         case keyboardValue.right:
-          this.keyboard='r';
+          that.keyboard='r';
           break;
         case keyboardValue.down:
-          this.keyboard='d';
+          that.keyboard='d';
 
           break;
       }
+      that.updateKeyboard=true;
     }, false);
 
 }
-GameEngine.prototype.addEntity = function(entity) {
-  this.entities.push(entity);
+GameEngine.prototype.addSprite = function(entity) {
+  if(entity!=undefined) {
+    this.entities.push (entity);
+  }
+
+}
+GameEngine.prototype.addBody=function (physicalBody) {
+  box2d.createSingleBody(physicalBody);
+}
+GameEngine.prototype.remove=function (name) {
+  for (i = 0; i < this.entities.length; i++) {
+    if( this.entities[i].name === name ) {
+      this.entities.splice(i ,1);
+  }
+  }
+}
+GameEngine.prototype.removeCurrentKeeper=function () {
+  for (i = 0; i < this.entities.length; i++) {
+    if( this.entities[i].name.startsWith("keep") ) {
+      console.log("remove"+this.entities[i].name);
+      box2d.destroyBody(this.entities[i].name);
+      this.entities.splice(i ,1);
+
+    }
+  }
+}
+
+
+GameEngine.prototype.view=function () {
+  for (i = 0; i < this.entities.length; i++) {
+ //console.log(this.entities[i].name);
+  }
 }
 GameEngine.prototype.AjustCanvas=function(){
-
   function resize() {
     var width = window.innerWidth;
     var height = window.innerHeight;
@@ -82,14 +114,27 @@ this.width=realWidth;
   window.addEventListener('resize', resize, false);
   resize();
 }
+GameEngine.prototype.draw=function (ctx) {
+  for (i = 0; i < this.entities.length; i++) {
+    this.entities[i].draw(ctx)
+
+  }
+}
 
 
 
-
-function Entity(path,spriteCoordinates){
+function Entity(path,spriteCoordinates,canvasCoordinate,offset){
  this.spriteCoordinates=spriteCoordinates;
   this.path=path;
+  this.name=canvasCoordinate.name;
   this.sprite=AssetMgr.getAsset(this.path);
+ this.canvasCoordnate=null;
+  this.canvasDimension={width:canvasCoordinate.width,height:canvasCoordinate.height}
+  this.offset=offset;
+  this.dynamic=false;
+}
+Entity.prototype.getPhysicalCoordinate=function (name) {
+  return box2d.getMapBodyPositionCanvas(name);
 }
 Entity.prototype.drawSpriteCenter = function(ctx) {
 
@@ -99,18 +144,21 @@ Entity.prototype.drawSpriteCenter = function(ctx) {
 }
 //only thing needed was postion from sprite sheet
 //everything depends on physical body
-Entity.prototype.draw = function(ctx,PhysicalBody) {
-  if(PhysicalBody.shape=="circle") {
-    pos = box2d.getMapBodyPositionCanvasCircle (PhysicalBody.name);
+Entity.prototype.draw = function(ctx) {
+  if(this.dynamic){
+    this.canvasCoordnate=this.getPhysicalCoordinate(this.name);
+    ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,
+      this.canvasCoordnate.x-this.offset.x,this.canvasCoordnate.y-this.offset.y,this.canvasDimension.width,this.canvasDimension.height);
   }
-  if(PhysicalBody.shape=="rectangle"){
-    pos = box2d.getMapBodyPositionCanvas(PhysicalBody.name);
+  else{
+    if(this.canvasCoordnate==null && !this.dynamic) {
+      this.canvasCoordnate = box2d.getMapBodyPositionCanvas (this.name);
+    }
+    ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,
+      this.canvasCoordnate.x-this.offset.x,this.canvasCoordnate.y-this.offset.y,this.canvasDimension.width,this.canvasDimension.height);
   }
-  if(PhysicalBody.shape=="null"){
-    pos={x:PhysicalBody.x-(PhysicalBody.width/2),y:PhysicalBody.y-(PhysicalBody.height/2)};
-  }
-
- ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,pos.x,pos.y,PhysicalBody.width,PhysicalBody.height);
 }
+
+
 
 //-----ball functions
