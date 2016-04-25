@@ -20,9 +20,9 @@ var ctx = canvas.getContext('2d');
 
 //var goalKeeperRight=new Entity ('Images/g.png',{x:820,y:170,width:275,height:115});
 
-
+//offset the way to seperate sprite with body
   var factoryPhysicalBody={
-  goal:{name:"goal",shape:'rectangle',density:1,friction:0.3,restitution:0.6, x:(canvas.width/2), y:(canvas.height*0.2),width:700,height:10, type:'k'},
+  goal:{name:"goal",shape:'rectangle',density:1,friction:0.3,restitution:0.6, x:(canvas.width/2), y:(canvas.height*0.15),width:700,height:10, type:'k'},
   keeperHands:{name:"keeperCenter",shape:'rectangle',density:1,friction:0.3,restitution:0.6, x:(canvas.width/2)+10, y:(canvas.height*0.3),width:120,height:30, type:'s'},
   keeperLeft:{name:"keeperLeft",shape:'rectangle',density:1,friction:0.3,restitution:0.6, x:(canvas.width/2)-216, y:(canvas.height*0.3),width:310,height:10, type:'k'},
   keeperRight:{name:"keeperRight",shape:'rectangle',density:1,friction:0.3,restitution:0.6, x:(canvas.width/2)+220, y:(canvas.height*0.3),width:275,height:10, type:'k'},
@@ -30,19 +30,24 @@ var ctx = canvas.getContext('2d');
 };
 //osds
 
-console.log(canvas.width);
 box2d.init();
-//box2d.manufactureBody(factoryPhysicalBody);
 
-var goalKeeperCenter=new Entity ('Images/g.png',{x:50,y:55,width:125,height:216},{x:canvas.width/2,y:canvas.height*0.3,width:125,height:216 ,name:"keeperCenter"},{x:0,y:90});
-var goalKeeperLeft= new Entity ('Images/g.png',{x:828,y:444,width:279,height:120},{x:(canvas.width/2)-216, y:(canvas.height*0.3),width:300,height:100,name:'keeperLeft'},{x:0,y:50});
-var goalKeeperRight=new Entity ('Images/g.png',{x:820,y:170,width:275,height:115},{x:(canvas.width/2)+220, y:(canvas.height*0.3),width:275,height:115,name:'keeperRight'},{x:0,y:50});
-var ball= new Entity ('Images/ball3.png',{x:0,y:0,width:708,height:724},{x:canvas.width/2,y:canvas.height*0.8,width:50,height:50,name:'ball'},{x:0,y:0} );
-game.addBody(factoryPhysicalBody.ball);
-game.addSprite(ball);
+var goalKeeperCenter=new Entity ('Images/g.png',{x:50,y:55,width:125,height:216},{x:canvas.width/2,y:canvas.height*0.3,width:125,height:216 ,name:"keeperCenter"},{x:0,y:90},'s',5);
+var goalKeeperLeft= new Entity ('Images/g.png',{x:828,y:444,width:279,height:120},{x:(canvas.width/2)-216, y:(canvas.height*0.3),width:300,height:100,name:'keeperLeft'},{x:0,y:50},'s',5);
+var goalKeeperRight=new Entity ('Images/g.png',{x:820,y:170,width:275,height:115},{x:(canvas.width/2)+220, y:(canvas.height*0.3),width:275,height:115,name:'keeperRight'},{x:0,y:50},'s',5);
+var ball= new Entity ('Images/ball3.png',{x:0,y:0,width:708,height:724},{x:canvas.width/2,y:canvas.height*0.8,width:50,height:50,name:'ball'},{x:0,y:0},'d',0);
+
+var goalPost=new Entity("Images/post.png",null,{x:(canvas.width/2)-400,y:(canvas.height*0.3)-213,width:800,height: 216,name:"goalpost"},null,'i',6);
+
+
+
+game.addSprite(goalPost);
+game.addSprite(goalKeeperCenter);
 game.addBody(factoryPhysicalBody.keeperHands);
 game.addBody(factoryPhysicalBody.goal);
-game.addSprite(goalKeeperCenter);
+game.addBody(factoryPhysicalBody.ball);
+game.addSprite(ball);
+//game.addSprite(goalPost);
 //game.addSprite(goalKeeperCenter);
 
 ball.dynamic=true;
@@ -58,31 +63,30 @@ function start() {
     //box2d.destroyBody("keeperLeft");
     box2d.world.ClearForces();
    box2d.world.DrawDebugData();
-    $(document).on("swipeleft",function(){
-      console.log("left");
-    });
-
     //goalkeeperLeft.draw(ctx,factorySprite.keeperLeft);
+
   game.draw(ctx);
     update();
-    drawGoalPost();
+  // drawGoalPost();
     box2d.drawDebug();
     setTimeout(animate, timeStep);
   }
 animate();
-};
 
+};
+game.view();
 function drawGoalPost(){
   this.sprite=AssetMgr.getAsset("Images/post.png");
-  ctx.drawImage(this.sprite,(canvas.width/2)-400,(canvas.height*0.3)-213,800,216)
+  ctx.drawImage(this.sprite,(canvas.width/2)-400,(canvas.height*0.3)-213,800,216);
 }
+
 function update() {
   updateGameKeyBoardEvents();
 
 }
 function updateGameKeyBoardEvents(){
   if (game.updateKeyboard) {
-    switch (game.keyboard) {
+    switch (game.move) {
       case "l":
         game.removeCurrentKeeper();
         game.addBody (factoryPhysicalBody.keeperLeft);
@@ -103,21 +107,27 @@ function updateGameKeyBoardEvents(){
   }
 }
 $( document ).ready(function() {
+  var that=game;
   var x= document.getElementById('game');
   var hammer    = new Hammer.Manager(x);
   var swipe     = new Hammer.Swipe();
   hammer.add(swipe);
   hammer.on('swipeleft', function(){
-   console.log("l");
+    game.updateKeyboard=true;
+    that.move='l';
   });
   hammer.on('swipeup', function(){
-    console.log("u");
+    game.updateKeyboard=true;
+    that.move='u';
   });
   hammer.on('swipedown', function(){
-    console.log("d");
+    game.updateKeyboard=true;
+    that.move='d';
   });
   hammer.on('swiperight', function(){
-    console.log("r");
+    game.updateKeyboard=true;
+    that.move='r';
   });
 });
+
 

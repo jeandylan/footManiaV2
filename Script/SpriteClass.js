@@ -3,18 +3,18 @@
  */
 function GameEngine(){
   this.entities=[];
-  this.keyboard=null;
+  this.move=null;
   this.updateKeyboard=false;
   this.mouse=null;
   this.scale=1;
 }
 GameEngine.prototype.init=function () {
   var canvas=document.getElementById("game");
- this.captureKeyboard();//works
+  this.captureKeyboard();//works
   this.AjustCanvas();
   this.width=0;
   this.height=0;
-}
+};
 GameEngine.prototype.captureKeyboard=function (){
     var that = this;
     window.addEventListener("keydown", function(e) {
@@ -22,39 +22,46 @@ GameEngine.prototype.captureKeyboard=function (){
       var keyboardValue={left:37,right:39,down:40,up:38}
       switch(e.keyCode) {
         case keyboardValue.left:
-          that.keyboard='l';
+          that.move='l';
           break;
         case keyboardValue.up:
-          that.keyboard='u';
+          that.move='u';
           break;
         case keyboardValue.right:
-          that.keyboard='r';
+          that.move='r';
           break;
         case keyboardValue.down:
-          that.keyboard='d';
+          that.move='d';
 
           break;
       }
       that.updateKeyboard=true;
     }, false);
 
-}
+};
+  
+
 GameEngine.prototype.addSprite = function(entity) {
   if(entity!=undefined) {
     this.entities.push (entity);
   }
 
-}
+};
 GameEngine.prototype.addBody=function (physicalBody) {
   box2d.createSingleBody(physicalBody);
-}
+};
 GameEngine.prototype.remove=function (name) {
   for (i = 0; i < this.entities.length; i++) {
     if( this.entities[i].name === name ) {
       this.entities.splice(i ,1);
   }
   }
-}
+};
+GameEngine.prototype.sortZIndex=function () {
+  this.entities.sort(function(a, b) {
+    return b.zIndex - a.zIndex;
+  });
+};
 GameEngine.prototype.removeCurrentKeeper=function () {
   for (i = 0; i < this.entities.length; i++) {
     if( this.entities[i].name.startsWith("keep") ) {
@@ -64,14 +71,15 @@ GameEngine.prototype.removeCurrentKeeper=function () {
 
     }
   }
-}
-
+};
 
 GameEngine.prototype.view=function () {
+  var out="";
   for (i = 0; i < this.entities.length; i++) {
- //console.log(this.entities[i].name);
+out= out.concat(this.entities[i].name+",");
   }
-}
+  console.log(out);
+}; //debug tool
 GameEngine.prototype.AjustCanvas=function(){
   function resize() {
     var width = window.innerWidth;
@@ -113,51 +121,74 @@ this.width=realWidth;
 
   window.addEventListener('resize', resize, false);
   resize();
-}
+};
 GameEngine.prototype.draw=function (ctx) {
+  this.sortZIndex();
   for (i = 0; i < this.entities.length; i++) {
     this.entities[i].draw(ctx)
-
   }
-}
+};
 
 
 
-function Entity(path,spriteCoordinates,canvasCoordinate,offset){
- this.spriteCoordinates=spriteCoordinates;
+function Entity(path,spriteCoordinates,canvasCoordinate,offset,type,zIndex){
   this.path=path;
-  this.name=canvasCoordinate.name;
   this.sprite=AssetMgr.getAsset(this.path);
- this.canvasCoordnate=null;
-  this.canvasDimension={width:canvasCoordinate.width,height:canvasCoordinate.height}
-  this.offset=offset;
-  this.dynamic=false;
-}
+  this.name = canvasCoordinate.name;
+  this.canvasCoordinate=canvasCoordinate;
+this.staticUpdated=false;
+  this.canvasCoordinateWidth=canvasCoordinate.width;
+  this.canvasCoordinateHeight=canvasCoordinate.height;
+  this.animate=false;
+  this.zIndex=zIndex;
+  this.spriteCoordinates = spriteCoordinates;
+  this.offset = offset;
+  this.type=type;
+
+  };
+
 Entity.prototype.getPhysicalCoordinate=function (name) {
   return box2d.getMapBodyPositionCanvas(name);
 }
+
+/*draw functions */
 Entity.prototype.drawSpriteCenter = function(ctx) {
 
   var centerX = this.pos.x - this.sprite.width/2;
   var centerY = this.pos.y - this.sprite.height/2;
   ctx.drawImage(this.sprite,centerX,centerY);
 }
-//only thing needed was postion from sprite sheet
-//everything depends on physical body
+
+
+Entity.prototype.drawDynamic=function (ctx) {
+  this.canvasCoordinate=box2d.getMapBodyPositionCanvas (this.name);
+  ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,
+    this.canvasCoordinate.x-this.offset.x,this.canvasCoordinate.y-this.offset.y,this.canvasCoordinateWidth,this.canvasCoordinateHeight);
+};
+Entity.prototype.drawStatic=function (ctx) {
+  if(!this.staticUpdated) {
+    this.canvasCoordinate = box2d.getMapBodyPositionCanvas (this.name);
+    this.staticUpdated=true;
+  }
+  ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,
+    this.canvasCoordinate.x-this.offset.x,this.canvasCoordinate.y-this.offset.y,this.canvasCoordinateWidth,this.canvasCoordinateHeight);
+};
+/*main draw func*/
 Entity.prototype.draw = function(ctx) {
-  if(this.dynamic){
-    this.canvasCoordnate=this.getPhysicalCoordinate(this.name);
-    ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,
-      this.canvasCoordnate.x-this.offset.x,this.canvasCoordnate.y-this.offset.y,this.canvasDimension.width,this.canvasDimension.height);
+  if(this.type=='d'){
+  this.drawDynamic(ctx);
   }
-  else{
-    if(this.canvasCoordnate==null && !this.dynamic) {
-      this.canvasCoordnate = box2d.getMapBodyPositionCanvas (this.name);
-    }
-    ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,
-      this.canvasCoordnate.x-this.offset.x,this.canvasCoordnate.y-this.offset.y,this.canvasDimension.width,this.canvasDimension.height);
+  if(this.type=='s') {
+    console.log("sssss");
+    this.drawStatic(ctx);
   }
-}
+  if(this.type=='i'){
+    ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,this.canvasCoordinate.x,this.canvasCoordinate.y,this.canvasCoordinate.width,this.canvasCoordinate.height);
+  }
+  };
+
+
+
 
 
 
