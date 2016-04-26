@@ -13,7 +13,7 @@ var ctx=document.getElementById('game').getContext('2d');
 var box2d = {
   scale: 30,
   init: function () {
-    var gravity = new b2Vec2 (-45, -90); //declare gravity as 9.8 m/s^2 downward
+    var gravity = new b2Vec2 (0, 0); //declare gravity as 9.8 m/s^2 downward
     var allowSleep = true; //Allow objects that are at rest to fall asleep and be excluded from
     box2d.world = new b2World (gravity, allowSleep);
     var timeStep = 1 / 60;
@@ -89,6 +89,13 @@ var box2d = {
     var body = box2d.world.CreateBody (bodyDef);
     body.SetUserData (entity);
     var fixture = body.CreateFixture (fixtureDef);
+    //apply random impluse
+    var minx = -100;
+    var maxx = 100;
+// and the formula is:
+    randomy=Math.floor(Math.random() * (-100 - 75)) + -75;
+    var randomx = Math.floor(Math.random() * (maxx - minx + 1)) + minx;
+    body.ApplyImpulse ({x:randomx, y:randomy}, body.GetWorldCenter ());
     return body;
   },
   getBodyByName: function (bodyName) {
@@ -227,7 +234,6 @@ var box2d = {
   createSingleBody:function (body) {
     switch (body.shape) {
       case "circle":
-        console.log("crea");
         box2d.createCircle (body);
         break;
       case "rectangle":

@@ -7,6 +7,9 @@ function GameEngine(){
   this.updateKeyboard=false;
   this.mouse=null;
   this.scale=1;
+  this.finish=false;
+  this.score=0;
+  this.prevScore=-1;
 }
 GameEngine.prototype.init=function () {
   var canvas=document.getElementById("game");
@@ -201,7 +204,9 @@ Entity.prototype.draw = function(ctx) {
     ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,this.canvasCoordinate.x,this.canvasCoordinate.y,this.canvasCoordinate.width,this.canvasCoordinate.height);
   }
   };
-
+Entity.prototype.getName=function () {
+  return this.name;
+}
 
 
 

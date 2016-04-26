@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<style>
+    html {
+        background: url(Images/menu.jpg) no-repeat center center fixed;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+    }
+    .wrapper {
+        text-align: center;
+    }
+
+    #play1 {
+        cursor: default;
+    }
+</style>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body>
+<div class="wrapper">
+    <a href="http://facebook.com/yourProfile" id="play">
+        <img src="Images/play.png" alt="my picture" height="128" width="128"  id="play1"/>
+    </a>
+    </div>
+<canvas id="hs" height="1000" width="1000">
+
+</canvas>
+</body>
+<script type="javascript" src="Script/jquery-2.2.2.min.js"></script>
+<script>
+    var canvas = document.getElementById("hs");
+    var ctx=canvas.getContext("2d");
+    ctx.font="60px Georgia";
+    ctx.fillText("Hight Score :",canvas.height/2,canvas.width/4);
+
+    ctx.font="30px Verdana";
+
+</script>
+</html>
