@@ -39,7 +39,13 @@ GameEngine.prototype.captureKeyboard=function (){
     }, false);
 
 };
-  
+GameEngine.prototype.getEntity=function (name) {
+  for (i = 0; i < this.entities.length; i++) {
+    if (this.entities[i].name === name) {
+      return this.entities[i];
+    }
+  }
+};
 
 GameEngine.prototype.addSprite = function(entity) {
   if(entity!=undefined) {
@@ -124,6 +130,7 @@ this.width=realWidth;
 };
 GameEngine.prototype.draw=function (ctx) {
   this.sortZIndex();
+  
   for (i = 0; i < this.entities.length; i++) {
     this.entities[i].draw(ctx)
   }
@@ -139,11 +146,16 @@ function Entity(path,spriteCoordinates,canvasCoordinate,offset,type,zIndex){
 this.staticUpdated=false;
   this.canvasCoordinateWidth=canvasCoordinate.width;
   this.canvasCoordinateHeight=canvasCoordinate.height;
-  this.animate=false;
+  this.animate=true;
   this.zIndex=zIndex;
   this.spriteCoordinates = spriteCoordinates;
   this.offset = offset;
   this.type=type;
+  this.frame=1;
+  this.tickCount=0;
+  this.tickPerFrame=4;
+  this.maxAnimate=5;
+  this.animateTick=0;
 
   };
 
@@ -179,19 +191,12 @@ Entity.prototype.draw = function(ctx) {
   this.drawDynamic(ctx);
   }
   if(this.type=='s') {
-    console.log("sssss");
     this.drawStatic(ctx);
   }
   if(this.type=='i'){
     ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,this.canvasCoordinate.x,this.canvasCoordinate.y,this.canvasCoordinate.width,this.canvasCoordinate.height);
   }
   };
-function Ball () {
-  this.Entity=new Entity ('Images/ball3.png',{x:0,y:0,width:708,height:724},{x:canvas.width/2,y:canvas.height*0.8,width:50,height:50,name:'ball'},{x:0,y:0},'d',0);
-}
-Ball.prototype.move=function () {
-  console.log("update");
-}
 
 
 

@@ -13,7 +13,7 @@ var ctx=document.getElementById('game').getContext('2d');
 var box2d = {
   scale: 30,
   init: function () {
-    var gravity = new b2Vec2 (-4, -10); //declare gravity as 9.8 m/s^2 downward
+    var gravity = new b2Vec2 (-45, -90); //declare gravity as 9.8 m/s^2 downward
     var allowSleep = true; //Allow objects that are at rest to fall asleep and be excluded from
     box2d.world = new b2World (gravity, allowSleep);
     var timeStep = 1 / 60;
@@ -152,6 +152,7 @@ var box2d = {
       var jointDef = new b2RevoluteJointDef ();
       jointDef.Initialize (bodyA, bodyB, bodyB.GetPosition ());
       box2d.world.CreateJoint (jointDef);
+     handleCollision(bodyA.GetUserData().name,bodyB.GetUserData().name);
 
     };
     listener.PostSolve = function (contact) {
