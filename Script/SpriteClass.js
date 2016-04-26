@@ -14,6 +14,7 @@ GameEngine.prototype.init=function () {
   this.AjustCanvas();
   this.width=0;
   this.height=0;
+  
 };
 GameEngine.prototype.captureKeyboard=function (){
     var that = this;
@@ -56,12 +57,15 @@ GameEngine.prototype.addSprite = function(entity) {
 GameEngine.prototype.addBody=function (physicalBody) {
   box2d.createSingleBody(physicalBody);
 };
-GameEngine.prototype.remove=function (name) {
+GameEngine.prototype.removeSprite=function (name) {
   for (i = 0; i < this.entities.length; i++) {
     if( this.entities[i].name === name ) {
       this.entities.splice(i ,1);
   }
   }
+};
+GameEngine.prototype.removeBody=function (name) {
+  box2d.destroyBody(name);
 };
 GameEngine.prototype.sortZIndex=function () {
   this.entities.sort(function(a, b) {
@@ -71,7 +75,7 @@ GameEngine.prototype.sortZIndex=function () {
 GameEngine.prototype.removeCurrentKeeper=function () {
   for (i = 0; i < this.entities.length; i++) {
     if( this.entities[i].name.startsWith("keep") ) {
-      console.log("remove"+this.entities[i].name);
+      console.log("removeSprite"+this.entities[i].name);
       box2d.destroyBody(this.entities[i].name);
       this.entities.splice(i ,1);
 
@@ -197,6 +201,7 @@ Entity.prototype.draw = function(ctx) {
     ctx.drawImage(this.sprite,this.spriteCoordinates.x,this.spriteCoordinates.y, this.spriteCoordinates.width, this.spriteCoordinates.height,this.canvasCoordinate.x,this.canvasCoordinate.y,this.canvasCoordinate.width,this.canvasCoordinate.height);
   }
   };
+
 
 
 
